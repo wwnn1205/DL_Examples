@@ -21,7 +21,6 @@ train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 
-# ========== 2. 定义 LeNet ==========
 class LeNet(nn.Module):
     def __init__(self):
         super(LeNet, self).__init__()
@@ -34,13 +33,13 @@ class LeNet(nn.Module):
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = torch.relu(self.conv1(x))
+        x = torch.sigmoid(self.conv1(x))
         x = self.pool1(x)
-        x = torch.relu(self.conv2(x))
+        x = torch.sigmoid(self.conv2(x))
         x = self.pool2(x)
         x = x.view(x.size(0), -1)
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
+        x = torch.sigmoid(self.fc1(x))
+        x = torch.sigmoid(self.fc2(x))
         x = self.fc3(x)
         return x
 
@@ -156,4 +155,3 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 train_model(model, criterion, optimizer, epochs=5)
 
-print("训练完成！ 运行命令查看 TensorBoard:  tensorboard --logdir=runs")

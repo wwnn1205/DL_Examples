@@ -2,3 +2,5 @@
 /MNIST/data/
 /data/
 /MNIST/runs/LeNet_MNIST/
+/AlexNet/data/
+/ResNet/data/
