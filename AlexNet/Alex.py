@@ -4,6 +4,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
+from torch.utils.tensorboard import SummaryWriter
+import random
 
 # 1. 数据预处理
 transform = transforms.Compose([
@@ -57,9 +59,25 @@ class AlexNet(nn.Module):
         x = self.classifier(x)
         return x
 
-# 3. 训练函数
+# 3. 测试函数
+def test_model(model, testloader, device="cpu"):
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for inputs, labels in testloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    return 100 * correct / total
+
+# 4. 训练函数（加 TensorBoard 可视化）
 def train_model(model, trainloader, testloader, criterion, optimizer, epochs=5, device="cpu"):
+    writer = SummaryWriter(log_dir="./runs/alexnet_cifar10")
     model.to(device)
+
     for epoch in range(epochs):
         model.train()
         running_loss = 0.0
@@ -72,22 +90,37 @@ def train_model(model, trainloader, testloader, criterion, optimizer, epochs=5, 
             optimizer.step()
             running_loss += loss.item()
 
-        print(f"Epoch [{epoch+1}/{epochs}], Loss: {running_loss/len(trainloader):.4f}")
-        test_model(model, testloader, device)
+        avg_loss = running_loss / len(trainloader)
+        acc = test_model(model, testloader, device)
 
-# 4. 测试函数
-def test_model(model, testloader, device="cpu"):
-    model.eval()
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for inputs, labels in testloader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    print(f"Test Accuracy: {100 * correct / total:.2f}%")
+        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, Test Acc: {acc:.2f}%")
+
+        # 记录 loss 和 acc
+        writer.add_scalar("Loss/train", avg_loss, epoch+1)
+        writer.add_scalar("Accuracy/test", acc, epoch+1)
+
+        # 记录第一层卷积核（6 个）
+        conv1_weights = model.features[0].weight.data.clone().cpu()
+        conv1_weights = (conv1_weights - conv1_weights.min()) / (conv1_weights.max() - conv1_weights.min())  # 归一化
+        writer.add_images("Conv1/filters", conv1_weights[:6], epoch+1)
+
+        # 随机取一张测试图片
+        sample_img, _ = random.choice(testloader.dataset)
+        sample_img = sample_img.unsqueeze(0).to(device)
+
+        # 获取第一层卷积输出
+        with torch.no_grad():
+            conv1_output = model.features[0](sample_img)
+            conv1_output = (conv1_output - conv1_output.min()) / (conv1_output.max() - conv1_output.min())  # 归一化
+
+        # 原图反归一化显示
+        writer.add_image("Sample/original", (sample_img[0].cpu() + 1) / 2, epoch+1)
+
+        # 取前 6 个特征图并扩展为 3 通道显示
+        conv1_out_vis = conv1_output[0, :6].cpu().unsqueeze(1).repeat(1, 3, 1, 1)  # [6, 3, H, W]
+        writer.add_images("Sample/conv1_output", conv1_out_vis, epoch+1)
+
+    writer.close()
 
 # 5. 运行
 if __name__ == "__main__":

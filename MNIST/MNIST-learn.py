@@ -33,13 +33,13 @@ class LeNet(nn.Module):
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = torch.sigmoid(self.conv1(x))
+        x = torch.tanh(self.conv1(x))
         x = self.pool1(x)
-        x = torch.sigmoid(self.conv2(x))
+        x = torch.tanh(self.conv2(x))
         x = self.pool2(x)
         x = x.view(x.size(0), -1)
-        x = torch.sigmoid(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))
+        x = torch.tanh(self.fc1(x))
+        x = torch.tanh(self.fc2(x))
         x = self.fc3(x)
         return x
 
@@ -61,6 +61,8 @@ def visualize_feature_maps(model, image, layer_name, writer, step):
     # 前向传播一次
     with torch.no_grad():
         model(image.unsqueeze(0))
+
+    #提取特征
 
     # 卷积层输出 [1, C, H, W]
     feature_maps = outputs[0].cpu()
@@ -154,4 +156,3 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 train_model(model, criterion, optimizer, epochs=5)
-
