@@ -6,3 +6,5 @@
 /ResNet/data/
 /AlexNet/runs/
 /MNIST/runs/
+/VAE/data/
+/GANs/data/
