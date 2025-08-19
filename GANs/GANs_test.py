@@ -12,7 +12,6 @@ train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=T
 train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 
 # --- 2. 定义判别器 (Discriminator) ---
-# 判别器的任务是判断一张图是真实的还是生成的
 class Discriminator(nn.Module):
     def __init__(self, input_dim=784):
         super(Discriminator, self).__init__()
@@ -27,7 +26,6 @@ class Discriminator(nn.Module):
         return self.model(x)
 
 # --- 3. 定义生成器 (Generator) ---
-# 生成器的任务是根据随机噪声生成假图像
 class Generator(nn.Module):
     def __init__(self, z_dim=100, output_dim=784):
         super(Generator, self).__init__()
@@ -43,6 +41,8 @@ class Generator(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+
 
 # --- 4. 训练模型 ---
 # 设置参数

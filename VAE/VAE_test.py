@@ -22,9 +22,6 @@ class VAE(nn.Module):
         self.encoder = nn.Sequential(
             nn.Linear(input_dim, h_dim), # 输入层到隐藏层
             nn.ReLU(),
-            # 这里是 VAE 的关键：不直接输出一个点，而是输出两个值
-            # 一个是均值 (mean)，另一个是标准差的对数 (log_variance)
-            # log_variance 是为了保证方差为正数
         )
         self.fc_mu = nn.Linear(h_dim, z_dim) # 隐藏层到均值
         self.fc_logvar = nn.Linear(h_dim, z_dim) # 隐藏层到方差的对数
