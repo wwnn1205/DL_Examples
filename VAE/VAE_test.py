@@ -46,6 +46,7 @@ class VAE(nn.Module):
 
     def forward(self, x):
         # 前向传播过程
+
         h = self.encoder(x)
         mu = self.fc_mu(h)
         log_var = self.fc_logvar(h)
