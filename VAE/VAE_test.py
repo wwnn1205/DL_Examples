@@ -44,6 +44,7 @@ class VAE(nn.Module):
         eps = torch.randn_like(std) # 从标准正态分布中随机取样一个噪声
         return mu + eps * std # 最终的潜在变量 z = 均值 + 噪声 * 标准差
 
+
     def forward(self, x):
         # 前向传播过程
         h = self.encoder(x)
